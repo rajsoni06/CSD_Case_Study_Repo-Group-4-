@@ -1,571 +1,458 @@
 package demo;
 
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.sql.Connection;
+import java.sql.*;
 import java.util.Scanner;
-import java.sql.Statement;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.DriverManager;
 
-public class HotelReservationSystem {
-    private static final String url = "jdbc:mysql://localhost:3306/hotel_db";
-    private static final String username = "user";
-    private static final String password = "mini@5";
 
-    public static void main(String[] args) throws ClassNotFoundException, SQLException {
-        try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
-        } catch (ClassNotFoundException e) {
-            System.out.println(e.getMessage());
-        }
+public class DatabaseConnection {
+    private static final String URL = "jdbc:mysql://localhost:3306/classroom_management";
+    private static final String USER = "root";
+    private static final String PASSWORD = "your_password";
 
-        try {
-            Connection connection = DriverManager.getConnection(url, username, password);
-            Scanner scanner = new Scanner(System.in);
-            while (true) {
-                System.out.println();
-                System.out.println("HOTEL MANAGEMENT SYSTEM");
-                System.out.println("1. Reservation Management");
-                System.out.println("2. Room Management");
-                System.out.println("3. Customer Management");
-                System.out.println("0. Exit");
-                System.out.print("Choose an option: ");
-                int choice = scanner.nextInt();
-                switch (choice) {
-                    case 1:
-                        reservationManagement(connection, scanner);
-                        break;
-                    case 2:
-                        roomManagement(connection, scanner);
-                        break;
-                    case 3:
-                        customerManagement(connection, scanner);
-                        break;
-                    case 0:
-                        exit();
-                        scanner.close();
-                        return;
-                    default:
-                        System.out.println("Invalid choice. Try again.");
-                }
+    public static Connection getConnection() throws SQLException {
+        return DriverManager.getConnection(URL, USER, PASSWORD);
+    }
+}
+
+public class CourseManagement {
+    public void addCourse(String title, String instructor, String schedule, int credits) {
+        try (Connection conn = DatabaseConnection.getConnection()) {
+            String sql = "INSERT INTO Course (title, instructor, schedule, credits) VALUES (?, ?, ?, ?)";
+            try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+                pstmt.setString(1, title);
+                pstmt.setString(2, instructor);
+                pstmt.setString(3, schedule);
+                pstmt.setInt(4, credits);
+                pstmt.executeUpdate();
+                System.out.println("Course added successfully.");
             }
         } catch (SQLException e) {
-            System.out.println(e.getMessage());
+            e.printStackTrace();
         }
     }
 
-    private static void reservationManagement(Connection connection, Scanner scanner) {
-        while (true) {
-            System.out.println();
-            System.out.println("RESERVATION MANAGEMENT");
-            System.out.println("1. Reserve a room");
-            System.out.println("2. View Reservations");
-            System.out.println("3. Get Room Number");
-            System.out.println("4. Update Reservations");
-            System.out.println("5. Delete Reservations");
-            System.out.println("0. Back to main menu");
-            System.out.print("Choose an option: ");
+    public void viewCourses() {
+        try (Connection conn = DatabaseConnection.getConnection()) {
+            String sql = "SELECT * FROM Course";
+            try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+                ResultSet rs = pstmt.executeQuery();
+                while (rs.next()) {
+                    System.out.println("Course ID: " + rs.getInt("course_id"));
+                    System.out.println("Title: " + rs.getString("title"));
+                    System.out.println("Instructor: " + rs.getString("instructor"));
+                    System.out.println("Schedule: " + rs.getString("schedule"));
+                    System.out.println("Credits: " + rs.getInt("credits"));
+                    System.out.println();
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void updateCourse(int courseId, String title, String instructor, String schedule, int credits) {
+        try (Connection conn = DatabaseConnection.getConnection()) {
+            String sql = "UPDATE Course SET title = ?, instructor = ?, schedule = ?, credits = ? WHERE course_id = ?";
+            try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+                pstmt.setString(1, title);
+                pstmt.setString(2, instructor);
+                pstmt.setString(3, schedule);
+                pstmt.setInt(4, credits);
+                pstmt.setInt(5, courseId);
+                pstmt.executeUpdate();
+                System.out.println("Course updated successfully.");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void deleteCourse(int courseId) {
+        try (Connection conn = DatabaseConnection.getConnection()) {
+            String sql = "DELETE FROM Course WHERE course_id = ?";
+            try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+                pstmt.setInt(1, courseId);
+                pstmt.executeUpdate();
+                System.out.println("Course deleted successfully.");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+}
+
+
+public class StudentManagement {
+    public void registerStudent(String name, String email, String phoneNumber, String address) {
+        try (Connection conn = DatabaseConnection.getConnection()) {
+            String sql = "INSERT INTO Student (name, email, phone_number, address) VALUES (?, ?, ?, ?)";
+            try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+                pstmt.setString(1, name);
+                pstmt.setString(2, email);
+                pstmt.setString(3, phoneNumber);
+                pstmt.setString(4, address);
+                pstmt.executeUpdate();
+                System.out.println("Student registered successfully.");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void viewStudents() {
+        try (Connection conn = DatabaseConnection.getConnection()) {
+            String sql = "SELECT * FROM Student";
+            try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+                ResultSet rs = pstmt.executeQuery();
+                while (rs.next()) {
+                    System.out.println("Student ID: " + rs.getInt("student_id"));
+                    System.out.println("Name: " + rs.getString("name"));
+                    System.out.println("Email: " + rs.getString("email"));
+                    System.out.println("Phone Number: " + rs.getString("phone_number"));
+                    System.out.println("Address: " + rs.getString("address"));
+                    System.out.println();
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void updateStudent(int studentId, String name, String email, String phoneNumber, String address) {
+        try (Connection conn = DatabaseConnection.getConnection()) {
+            String sql = "UPDATE Student SET name = ?, email = ?, phone_number = ?, address = ? WHERE student_id = ?";
+            try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+                pstmt.setString(1, name);
+                pstmt.setString(2, email);
+                pstmt.setString(3, phoneNumber);
+                pstmt.setString(4, address);
+                pstmt.setInt(5, studentId);
+                pstmt.executeUpdate();
+                System.out.println("Student updated successfully.");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void deleteStudent(int studentId) {
+        try (Connection conn = DatabaseConnection.getConnection()) {
+            String sql = "DELETE FROM Student WHERE student_id = ?";
+            try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+                pstmt.setInt(1, studentId);
+                pstmt.executeUpdate();
+                System.out.println("Student deleted successfully.");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+}
+
+    public class GradeManagement {
+    public void assignGrade(int courseId, int studentId, String grade) {
+        try (Connection conn = DatabaseConnection.getConnection()) {
+            String sql = "INSERT INTO Grade (course_id, student_id, grade) VALUES (?, ?, ?)";
+            try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+                pstmt.setInt(1, courseId);
+                pstmt.setInt(2, studentId);
+                pstmt.setString(3, grade);
+                pstmt.executeUpdate();
+                System.out.println("Grade assigned successfully.");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void viewGrades() {
+        try (Connection conn = DatabaseConnection.getConnection()) {
+            String sql = "SELECT * FROM Grade";
+            try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+                ResultSet rs = pstmt.executeQuery();
+                while (rs.next()) {
+                    System.out.println("Grade ID: " + rs.getInt("grade_id"));
+                    System.out.println("Course ID: " + rs.getInt("course_id"));
+                    System.out.println("Student ID: " + rs.getInt("student_id"));
+                    System.out.println("Grade: " + rs.getString("grade"));
+                    System.out.println();
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void updateGrade(int gradeId, int courseId, int studentId, String grade) {
+        try (Connection conn = DatabaseConnection.getConnection()) {
+            String sql = "UPDATE Grade SET course_id = ?, student_id = ?, grade = ? WHERE grade_id = ?";
+            try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+                pstmt.setInt(1, courseId);
+                pstmt.setInt(2, studentId);
+                pstmt.setString(3, grade);
+                pstmt.setInt(4, gradeId);
+                pstmt.executeUpdate();
+                System.out.println("Grade updated successfully.");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void removeGrade(int gradeId) {
+        try (Connection conn = DatabaseConnection.getConnection()) {
+            String sql = "DELETE FROM Grade WHERE grade_id = ?";
+            try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+                pstmt.setInt(1, gradeId);
+                pstmt.executeUpdate();
+                System.out.println("Grade removed successfully.");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+}
+
+public class GPAService {
+    public double calculateGPA(int studentId) {
+        double gpa = 0.0;
+        int totalCredits = 0;
+        int totalPoints = 0;
+
+        try (Connection conn = DatabaseConnection.getConnection()) {
+            String sql = "SELECT g.grade, c.credits FROM Grade g JOIN Course c ON g.course_id = c.course_id WHERE g.student_id = ?";
+            try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+                pstmt.setInt(1, studentId);
+                ResultSet rs = pstmt.executeQuery();
+
+                while (rs.next()) {
+                    String grade = rs.getString("grade");
+                    int credits = rs.getInt("credits");
+                    totalCredits += credits;
+                    totalPoints += gradeToPoints(grade) * credits;
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        if (totalCredits > 0) {
+            gpa = (double) totalPoints / totalCredits;
+        }
+
+        return gpa;
+    }
+
+    private int gradeToPoints(String grade) {
+        switch (grade) {
+            case "A":
+                return 4;
+            case "B":
+                return 3;
+            case "C":
+                return 2;
+            case "D":
+                return 1;
+            default:
+                return 0;
+        }
+    }
+}
+
+public class ClassroomManagementSystem {
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        CourseManagement courseManagement = new CourseManagement();
+        StudentManagement studentManagement = new StudentManagement();
+        GradeManagement gradeManagement = new GradeManagement();
+        GPAService gpaService = new GPAService();
+
+        boolean exit = false;
+
+        while (!exit) {
+            System.out.println("Classroom Management System:");
+            System.out.println("1. Course Management");
+            System.out.println("2. Student Management");
+            System.out.println("3. Grade Management");
+            System.out.println("4. Calculate GPA");
+            System.out.println("5. Exit");
+            System.out.print("Enter your choice: ");
             int choice = scanner.nextInt();
+
             switch (choice) {
                 case 1:
-                    reserveRoom(connection, scanner);
+                    manageCourses(scanner, courseManagement);
                     break;
                 case 2:
-                    viewReservations(connection);
+                    manageStudents(scanner, studentManagement);
                     break;
                 case 3:
-                    getRoomNumber(connection, scanner);
+                    manageGrades(scanner, gradeManagement);
                     break;
                 case 4:
-                    updateReservation(connection, scanner);
+                    calculateGPA(scanner, gpaService);
                     break;
                 case 5:
-                    deleteReservation(connection, scanner);
+                    exit = true;
                     break;
-                case 0:
-                    return;
                 default:
-                    System.out.println("Invalid choice. Try again.");
+                    System.out.println("Invalid choice. Please try again.");
             }
+        }
+        scanner.close();
+    }
+
+    private static void manageCourses(Scanner scanner, CourseManagement courseManagement) {
+        System.out.println("Course Management:");
+        System.out.println("1. Add Course");
+        System.out.println("2. View Courses");
+        System.out.println("3. Update Course");
+        System.out.println("4. Delete Course");
+        System.out.print("Enter your choice: ");
+        int choice = scanner.nextInt();
+        scanner.nextLine(); // Consume newline
+
+        switch (choice) {
+            case 1:
+                System.out.print("Enter title: ");
+                String title = scanner.nextLine();
+                System.out.print("Enter instructor: ");
+                String instructor = scanner.nextLine();
+                System.out.print("Enter schedule: ");
+                String schedule = scanner.nextLine();
+                System.out.print("Enter credits: ");
+                int credits = scanner.nextInt();
+                courseManagement.addCourse(title, instructor, schedule, credits);
+                break;
+            case 2:
+                courseManagement.viewCourses();
+                break;
+            case 3:
+                System.out.print("Enter course ID: ");
+                int courseId = scanner.nextInt();
+                scanner.nextLine(); // Consume newline
+                System.out.print("Enter title: ");
+                title = scanner.nextLine();
+                System.out.print("Enter instructor: ");
+                instructor = scanner.nextLine();
+                System.out.print("Enter schedule: ");
+                schedule = scanner.nextLine();
+                System.out.print("Enter credits: ");
+                credits = scanner.nextInt();
+                courseManagement.updateCourse(courseId, title, instructor, schedule, credits);
+                break;
+            case 4:
+                System.out.print("Enter course ID: ");
+                courseId = scanner.nextInt();
+                courseManagement.deleteCourse(courseId);
+                break;
+            default:
+                System.out.println("Invalid choice.");
         }
     }
 
-    private static void reserveRoom(Connection connection, Scanner scanner) {
-        try {
-            System.out.print("Enter guest name: ");
-            String guestName = scanner.next();
-            scanner.nextLine();
-            System.out.print("Enter room number: ");
-            int roomNumber = scanner.nextInt();
-            System.out.print("Enter contact number: ");
-            String contactNumber = scanner.next();
+    private static void manageStudents(Scanner scanner, StudentManagement studentManagement) {
+        System.out.println("Student Management:");
+        System.out.println("1. Register Student");
+        System.out.println("2. View Students");
+        System.out.println("3. Update Student");
+        System.out.println("4. Delete Student");
+        System.out.print("Enter your choice: ");
+        int choice = scanner.nextInt();
+        scanner.nextLine(); // Consume newline
 
-            String sql = "INSERT INTO reservations (guest_name, room_number, contact_number) " +
-                    "VALUES ('" + guestName + "', " + roomNumber + ", '" + contactNumber + "')";
-
-            try (Statement statement = connection.createStatement()) {
-                int affectedRows = statement.executeUpdate(sql);
-
-                if (affectedRows > 0) {
-                    System.out.println("Reservation successful!");
-                } else {
-                    System.out.println("Reservation failed.");
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
+        switch (choice) {
+            case 1:
+                System.out.print("Enter name: ");
+                String name = scanner.nextLine();
+                System.out.print("Enter email: ");
+                String email = scanner.nextLine();
+                System.out.print("Enter phone number: ");
+                String phoneNumber = scanner.nextLine();
+                System.out.print("Enter address: ");
+                String address = scanner.nextLine();
+                studentManagement.registerStudent(name, email, phoneNumber, address);
+                break;
+            case 2:
+                studentManagement.viewStudents();
+                break;
+            case 3:
+                System.out.print("Enter student ID: ");
+                int studentId = scanner.nextInt();
+                scanner.nextLine(); // Consume newline
+                System.out.print("Enter name: ");
+                name = scanner.nextLine();
+                System.out.print("Enter email: ");
+                email = scanner.nextLine();
+                System.out.print("Enter phone number: ");
+                phoneNumber = scanner.nextLine();
+                System.out.print("Enter address: ");
+                address = scanner.nextLine();
+                studentManagement.updateStudent(studentId, name, email, phoneNumber, address);
+                break;
+            case 4:
+                System.out.print("Enter student ID: ");
+                studentId = scanner.nextInt();
+                studentManagement.deleteStudent(studentId);
+                break;
+            default:
+                System.out.println("Invalid choice.");
         }
     }
 
-    private static void viewReservations(Connection connection) {
-        String sql = "SELECT reservation_id, guest_name, room_number, contact_number, reservation_date FROM reservations";
+    private static void manageGrades(Scanner scanner, GradeManagement gradeManagement) {
+        System.out.println("Grade Management:");
+        System.out.println("1. Assign Grade");
+        System.out.println("2. View Grades");
+        System.out.println("3. Update Grade");
+        System.out.println("4. Remove Grade");
+        System.out.print("Enter your choice: ");
+        int choice = scanner.nextInt();
 
-        try (Statement statement = connection.createStatement();
-             ResultSet resultSet = statement.executeQuery(sql)) {
-
-            System.out.println("Current Reservations:");
-            System.out.println("+----------------+-----------------+---------------+----------------------+-------------------------+");
-            System.out.println("| Reservation ID | Guest           | Room Number   | Contact Number       | Reservation Date        |");
-            System.out.println("+----------------+-----------------+---------------+----------------------+-------------------------+");
-
-            while (resultSet.next()) {
-                int reservationId = resultSet.getInt("reservation_id");
-                String guestName = resultSet.getString("guest_name");
-                int roomNumber = resultSet.getInt("room_number");
-                String contactNumber = resultSet.getString("contact_number");
-                String reservationDate = resultSet.getTimestamp("reservation_date").toString();
-
-                System.out.printf("| %-14d | %-15s | %-13d | %-20s | %-19s   |\n",
-                        reservationId, guestName, roomNumber, contactNumber, reservationDate);
-            }
-
-            System.out.println("+----------------+-----------------+---------------+----------------------+-------------------------+");
-        } catch (SQLException e) {
-            e.printStackTrace();
+        switch (choice) {
+            case 1:
+                System.out.print("Enter course ID: ");
+                int courseId = scanner.nextInt();
+                System.out.print("Enter student ID: ");
+                int studentId = scanner.nextInt();
+                System.out.print("Enter grade: ");
+                String grade = scanner.next();
+                gradeManagement.assignGrade(courseId, studentId, grade);
+                break;
+            case 2:
+                gradeManagement.viewGrades();
+                break;
+            case 3:
+                System.out.print("Enter grade ID: ");
+                int gradeId = scanner.nextInt();
+                System.out.print("Enter course ID: ");
+                courseId = scanner.nextInt();
+                System.out.print("Enter student ID: ");
+                studentId = scanner.nextInt();
+                System.out.print("Enter grade: ");
+                grade = scanner.next();
+                gradeManagement.updateGrade(gradeId, courseId, studentId, grade);
+                break;
+            case 4:
+                System.out.print("Enter grade ID: ");
+                gradeId = scanner.nextInt();
+                gradeManagement.removeGrade(gradeId);
+                break;
+            default:
+                System.out.println("Invalid choice.");
         }
     }
 
-    private static void getRoomNumber(Connection connection, Scanner scanner) {
-        try {
-            System.out.print("Enter reservation ID: ");
-            int reservationId = scanner.nextInt();
-            System.out.print("Enter guest name: ");
-            String guestName = scanner.next();
-
-            String sql = "SELECT room_number FROM reservations " +
-                    "WHERE reservation_id = " + reservationId +
-                    " AND guest_name = '" + guestName + "'";
-
-            try (Statement statement = connection.createStatement();
-                 ResultSet resultSet = statement.executeQuery(sql)) {
-
-                if (resultSet.next()) {
-                    int roomNumber = resultSet.getInt("room_number");
-                    System.out.println("Room number for Reservation ID " + reservationId +
-                            " and Guest " + guestName + " is: " + roomNumber);
-                } else {
-                    System.out.println("Reservation not found for the given ID and guest name.");
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private static void updateReservation(Connection connection, Scanner scanner) {
-        try {
-            System.out.print("Enter reservation ID to update: ");
-            int reservationId = scanner.nextInt();
-            scanner.nextLine(); // Consume the newline character
-
-            if (!reservationExists(connection, reservationId)) {
-                System.out.println("Reservation not found for the given ID.");
-                return;
-            }
-
-            System.out.print("Enter new guest name: ");
-            String newGuestName = scanner.nextLine();
-            System.out.print("Enter new room number: ");
-            int newRoomNumber = scanner.nextInt();
-            System.out.print("Enter new contact number: ");
-            String newContactNumber = scanner.next();
-
-            String sql = "UPDATE reservations SET guest_name = '" + newGuestName + "', " +
-                    "room_number = " + newRoomNumber + ", " +
-                    "contact_number = '" + newContactNumber + "' " +
-                    "WHERE reservation_id = " + reservationId;
-
-            try (Statement statement = connection.createStatement()) {
-                int affectedRows = statement.executeUpdate(sql);
-
-                if (affectedRows > 0) {
-                    System.out.println("Reservation updated successfully!");
-                } else {
-                    System.out.println("Reservation update failed.");
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private static void deleteReservation(Connection connection, Scanner scanner) {
-        try {
-            System.out.print("Enter reservation ID to delete: ");
-            int reservationId = scanner.nextInt();
-
-            if (!reservationExists(connection, reservationId)) {
-                System.out.println("Reservation not found for the given ID.");
-                return;
-            }
-
-            String sql = "DELETE FROM reservations WHERE reservation_id = " + reservationId;
-
-            try (Statement statement = connection.createStatement()) {
-                int affectedRows = statement.executeUpdate(sql);
-
-                if (affectedRows > 0) {
-                    System.out.println("Reservation deleted successfully!");
-                } else {
-                    System.out.println("Reservation deletion failed.");
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private static boolean reservationExists(Connection connection, int reservationId) {
-        try {
-            String sql = "SELECT reservation_id FROM reservations WHERE reservation_id = " + reservationId;
-
-            try (Statement statement = connection.createStatement();
-                 ResultSet resultSet = statement.executeQuery(sql)) {
-
-                return resultSet.next(); // If there's a result, the reservation exists
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return false; // Handle database errors as needed
-        }
-    }
-
-    private static void roomManagement(Connection connection, Scanner scanner) {
-        while (true) {
-            System.out.println();
-            System.out.println("ROOM MANAGEMENT");
-            System.out.println("1. Add a new room");
-            System.out.println("2. View room details");
-            System.out.println("3. Update room information");
-            System.out.println("4. Delete a room");
-            System.out.println("0. Back to main menu");
-            System.out.print("Choose an option: ");
-            int choice = scanner.nextInt();
-            switch (choice) {
-                case 1:
-                    addRoom(connection, scanner);
-                    break;
-                case 2:
-                    viewRoomDetails(connection);
-                    break;
-                case 3:
-                    updateRoom(connection, scanner);
-                    break;
-                case 4:
-                    deleteRoom(connection, scanner);
-                    break;
-                case 0:
-                    return;
-                default:
-                    System.out.println("Invalid choice. Try again.");
-            }
-        }
-    }
-
-    private static void addRoom(Connection connection, Scanner scanner) {
-        try {
-            System.out.print("Enter room number: ");
-            int roomNumber = scanner.nextInt();
-            scanner.nextLine(); // Consume newline character
-            System.out.print("Enter room type: ");
-            String roomType = scanner.nextLine();
-            System.out.print("Enter room price: ");
-            double roomPrice = scanner.nextDouble();
-
-            String sql = "INSERT INTO rooms (room_number, room_type, room_price) " +
-                    "VALUES (" + roomNumber + ", '" + roomType + "', " + roomPrice + ")";
-
-            try (Statement statement = connection.createStatement()) {
-                int affectedRows = statement.executeUpdate(sql);
-
-                if (affectedRows > 0) {
-                    System.out.println("Room added successfully!");
-                } else {
-                    System.out.println("Failed to add room.");
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private static void viewRoomDetails(Connection connection) {
-        String sql = "SELECT room_number, room_type, room_price FROM rooms";
-
-        try (Statement statement = connection.createStatement();
-             ResultSet resultSet = statement.executeQuery(sql)) {
-
-            System.out.println("Room Details:");
-            System.out.println("+------------+---------------+------------+");
-            System.out.println("| Room Number| Room Type     | Room Price |");
-            System.out.println("+------------+---------------+------------+");
-
-            while (resultSet.next()) {
-                int roomNumber = resultSet.getInt("room_number");
-                String roomType = resultSet.getString("room_type");
-                double roomPrice = resultSet.getDouble("room_price");
-
-                System.out.printf("| %-11d | %-13s | %-10.2f |\n", roomNumber, roomType, roomPrice);
-            }
-
-            System.out.println("+------------+---------------+------------+");
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private static void updateRoom(Connection connection, Scanner scanner) {
-        try {
-            System.out.print("Enter room number to update: ");
-            int roomNumber = scanner.nextInt();
-            scanner.nextLine(); // Consume newline character
-
-            if (!roomExists(connection, roomNumber)) {
-                System.out.println("Room not found for the given number.");
-                return;
-            }
-
-            System.out.print("Enter new room type: ");
-            String newRoomType = scanner.nextLine();
-            System.out.print("Enter new room price: ");
-            double newRoomPrice = scanner.nextDouble();
-
-            String sql = "UPDATE rooms SET room_type = '" + newRoomType + "', room_price = " + newRoomPrice +
-                    " WHERE room_number = " + roomNumber;
-
-            try (Statement statement = connection.createStatement()) {
-                int affectedRows = statement.executeUpdate(sql);
-
-                if (affectedRows > 0) {
-                    System.out.println("Room updated successfully!");
-                } else {
-                    System.out.println("Room update failed.");
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private static void deleteRoom(Connection connection, Scanner scanner) {
-        try {
-            System.out.print("Enter room number to delete: ");
-            int roomNumber = scanner.nextInt();
-
-            if (!roomExists(connection, roomNumber)) {
-                System.out.println("Room not found for the given number.");
-                return;
-            }
-
-            String sql = "DELETE FROM rooms WHERE room_number = " + roomNumber;
-
-            try (Statement statement = connection.createStatement()) {
-                int affectedRows = statement.executeUpdate(sql);
-
-                if (affectedRows > 0) {
-                    System.out.println("Room deleted successfully!");
-                } else {
-                    System.out.println("Room deletion failed.");
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private static boolean roomExists(Connection connection, int roomNumber) {
-        try {
-            String sql = "SELECT room_number FROM rooms WHERE room_number = " + roomNumber;
-
-            try (Statement statement = connection.createStatement();
-                 ResultSet resultSet = statement.executeQuery(sql)) {
-
-                return resultSet.next(); // If there's a result, the room exists
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return false; // Handle database errors as needed
-        }
-    }
-
-    private static void customerManagement(Connection connection, Scanner scanner) {
-        while (true) {
-            System.out.println();
-            System.out.println("CUSTOMER MANAGEMENT");
-            System.out.println("1. Register a new customer");
-            System.out.println("2. View customer details");
-            System.out.println("3. Update customer information");
-            System.out.println("4. Delete a customer");
-            System.out.println("0. Back to main menu");
-            System.out.print("Choose an option: ");
-            int choice = scanner.nextInt();
-            switch (choice) {
-                case 1:
-                    registerCustomer(connection, scanner);
-                    break;
-                case 2:
-                    viewCustomerDetails(connection);
-                    break;
-                case 3:
-                    updateCustomer(connection, scanner);
-                    break;
-                case 4:
-                    deleteCustomer(connection, scanner);
-                    break;
-                case 0:
-                    return;
-                default:
-                    System.out.println("Invalid choice. Try again.");
-            }
-        }
-    }
-
-    private static void registerCustomer(Connection connection, Scanner scanner) {
-        try {
-            System.out.print("Enter customer name: ");
-            String customerName = scanner.next();
-            scanner.nextLine(); // Consume newline character
-            System.out.print("Enter contact number: ");
-            String contactNumber = scanner.next();
-
-            String sql = "INSERT INTO customers (customer_name, contact_number) " +
-                    "VALUES ('" + customerName + "', '" + contactNumber + "')";
-
-            try (Statement statement = connection.createStatement()) {
-                int affectedRows = statement.executeUpdate(sql);
-
-                if (affectedRows > 0) {
-                    System.out.println("Customer registered successfully!");
-                } else {
-                    System.out.println("Customer registration failed.");
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private static void viewCustomerDetails(Connection connection) {
-        String sql = "SELECT customer_id, customer_name, contact_number FROM customers";
-
-        try (Statement statement = connection.createStatement();
-             ResultSet resultSet = statement.executeQuery(sql)) {
-
-            System.out.println("Customer Details:");
-            System.out.println("+-------------+-----------------+------------------+");
-            System.out.println("| Customer ID | Customer Name   | Contact Number   |");
-            System.out.println("+-------------+-----------------+------------------+");
-
-            while (resultSet.next()) {
-                int customerId = resultSet.getInt("customer_id");
-                String customerName = resultSet.getString("customer_name");
-                String contactNumber = resultSet.getString("contact_number");
-
-                System.out.printf("| %-11d | %-15s | %-16s |\n", customerId, customerName, contactNumber);
-            }
-
-            System.out.println("+-------------+-----------------+------------------+");
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private static void updateCustomer(Connection connection, Scanner scanner) {
-        try {
-            System.out.print("Enter customer ID to update: ");
-            int customerId = scanner.nextInt();
-            scanner.nextLine(); // Consume newline character
-
-            if (!customerExists(connection, customerId)) {
-                System.out.println("Customer not found for the given ID.");
-                return;
-            }
-
-            System.out.print("Enter new customer name: ");
-            String newCustomerName = scanner.nextLine();
-            System.out.print("Enter new contact number: ");
-            String newContactNumber = scanner.next();
-
-            String sql = "UPDATE customers SET customer_name = '" + newCustomerName + "', " +
-                    "contact_number = '" + newContactNumber + "' WHERE customer_id = " + customerId;
-
-            try (Statement statement = connection.createStatement()) {
-                int affectedRows = statement.executeUpdate(sql);
-
-                if (affectedRows > 0) {
-                    System.out.println("Customer updated successfully!");
-                } else {
-                    System.out.println("Customer update failed.");
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private static void deleteCustomer(Connection connection, Scanner scanner) {
-        try {
-            System.out.print("Enter customer ID to delete: ");
-            int customerId = scanner.nextInt();
-
-            if (!customerExists(connection, customerId)) {
-                System.out.println("Customer not found for the given ID.");
-                return;
-            }
-
-            String sql = "DELETE FROM customers WHERE customer_id = " + customerId;
-
-            try (Statement statement = connection.createStatement()) {
-                int affectedRows = statement.executeUpdate(sql);
-
-                if (affectedRows > 0) {
-                    System.out.println("Customer deleted successfully!");
-                } else {
-                    System.out.println("Customer deletion failed.");
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private static boolean customerExists(Connection connection, int customerId) {
-        try {
-            String sql = "SELECT customer_id FROM customers WHERE customer_id = " + customerId;
-
-            try (Statement statement = connection.createStatement();
-                 ResultSet resultSet = statement.executeQuery(sql)) {
-
-                return resultSet.next(); // If there's a result, the customer exists
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return false; // Handle database errors as needed
-        }
-    }
-
-    public static void exit() {
-        System.out.println("Exiting Hotel Management System. Goodbye!");
+    private static void calculateGPA(Scanner scanner, GPAService gpaService) {
+        System.out.print("Enter student ID: ");
+        int studentId = scanner.nextInt();
+        double gpa = gpaService.calculateGPA(studentId);
+        System.out.printf("GPA for student ID %d is %.2f%n", studentId, gpa);
     }
 }
 
