@@ -8,6 +8,40 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.DriverManager;
 
+public class ClassroomManagementSystem {
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        boolean exit = false;
+
+        while (!exit) {
+            System.out.println("Classroom Management System:");
+            System.out.println("1. Course Management");
+            System.out.println("2. Student Management");
+            System.out.println("3. Grade Management");
+            System.out.println("4. Exit");
+            System.out.print("Enter your choice: ");
+            int choice = scanner.nextInt();
+
+            switch (choice) {
+                case 1:
+                    // Course Management
+                    break;
+                case 2:
+                    // Student Management
+                    break;
+                case 3:
+                    // Grade Management
+                    break;
+                case 4:
+                    exit = true;
+                    break;
+                default:
+                    System.out.println("Invalid choice. Please try again.");
+            }
+        }
+        scanner.close();
+    }
+}
 
 public class DatabaseConnection {
     private static final String URL = "jdbc:mysql://localhost:3306/classroom_management";
